@@ -4,27 +4,77 @@ from tkinter import ttk
 from tkinter import filedialog
 
 
-def open_modulator(data_dict):
+def start_modulator(data_dict):
     for key, value in data_dict.items():
         print(key + ":", value)
 
 
-def open_demodulator(file_name):
+def start_demodulator(file_name):
     messagebox.showinfo("Режим Демодулятора", f"Выбранный файл: {file_name}")
 
 
-def create_modulation_order_options():
-    return ['1', '2', '3', '4']
-
-
-def open_file_dialog():
-    file_name = filedialog.askopenfilename()
+def open_file_dialog(file_name_entry):
+    file_name_entry.config(state="normal")  # Устанавливаем состояние "обычное"
+    filetypes = (("QAM датаграмма файл", "*.qam"),
+                 ("Текстовый файл", "*.txt"),
+                 ("Изображение", "*.jpg *.gif *.png"),
+                 ("Любой", "*"))
+    file_name = filedialog.askopenfilename(filetypes=filetypes)
     file_name_entry.delete(0, tk.END)
     file_name_entry.insert(0, file_name)
+    file_name_entry.config(state="readonly")  # Устанавливаем состояние "readonly" после вставки значения
+
+
+def execute_modulator(modulation_order_var, carrier_frequency_entry, sampling_frequency_entry, transmission_time_entry,
+                      data_length_entry, data_entry, noise_level_entry, file_name_entry):
+    # Проверка на заполненность всех полей
+    if (modulation_order_var.get() and carrier_frequency_entry.get() and sampling_frequency_entry.get() and
+            transmission_time_entry.get() and data_length_entry.get() and data_entry.get() and
+            noise_level_entry.get() and file_name_entry.get()):
+
+        # Получаем значения частот
+        carrier_frequency = float(carrier_frequency_entry.get())
+        sampling_frequency = float(sampling_frequency_entry.get())
+
+        # Проверка на соотношение частот
+        if sampling_frequency <= carrier_frequency * 2:
+            messagebox.showerror("Ошибка",
+                                 "Частота дискретизации должна быть больше несущей частоты  более чем в 2 раза.")
+            return
+
+        # Получаем значения длины данных
+        data_length = int(data_length_entry.get())
+        # Получаем данные из поля
+        data = data_entry.get()
+
+        # Проверка на соответствие длины данных
+        if data_length != len(data):
+            messagebox.showerror("Ошибка", "Длина данных не совпадает с указанной длиной.")
+            return
+
+        # Если все поля заполнены и соответствуют условиям, создаем словарь с данными
+        data_dict = {
+            'modulation_order': modulation_order_var.get(),
+            'carrier_frequency': carrier_frequency_entry.get(),
+            'sampling_frequency': sampling_frequency_entry.get(),
+            'transmission_time': transmission_time_entry.get(),
+            'data_length': data_length_entry.get(),
+            'data': data_entry.get(),
+            'noise_level': noise_level_entry.get(),
+            'file_name': file_name_entry.get()
+        }
+
+        # Вызываем функцию open_modulator с нашим словарем
+        start_modulator(data_dict)
+    else:
+        # Если какое-то поле не заполнено, выводим сообщение об ошибке
+        messagebox.showerror("Ошибка", "Все поля должны быть заполнены.")
 
 
 from validators import validate_frequency, validate_time, validate_data_length, validate_hex_data, validate_noise_level, \
     validate_file_name_length
+
+from controls import create_modulation_order_options
 
 
 def show_modulator_fields(modulator_frame, demodulator_frame):
@@ -37,22 +87,6 @@ def show_demodulator_fields(modulator_frame, demodulator_frame):
     modulator_frame.pack_forget()
     demodulator_frame.pack(pady=10)
     # select_mode_button.config(command=open_demodulator)
-
-
-def execute_modulator(modulation_order_var, carrier_frequency_entry, sampling_frequency_entry, transmission_time_entry,
-                      data_length_entry, data_entry, noise_level_entry, file_name_entry):
-    data_dict = {}
-    # Заполняем словарь данными из полей ввода
-    data_dict['modulation_order'] = modulation_order_var.get()
-    data_dict['carrier_frequency'] = carrier_frequency_entry.get()
-    data_dict['sampling_frequency'] = sampling_frequency_entry.get()
-    data_dict['transmission_time'] = transmission_time_entry.get()
-    data_dict['data_length'] = data_length_entry.get()
-    data_dict['data'] = data_entry.get()
-    data_dict['noise_level'] = noise_level_entry.get()
-    data_dict['file_name'] = file_name_entry.get()
-    # Вызываем функцию open_modulator с нашим словарем
-    open_modulator(data_dict)
 
 
 def qam_mod():
@@ -73,22 +107,12 @@ def qam_mod():
     # Фрейм для параметров модулятора
     modulator_frame = tk.Frame(root)
 
-    # Создаем переменные для хранения данных из различных полей
-    modulation_order_var = tk.StringVar()
-    carrier_frequency_var = tk.StringVar()
-    sampling_frequency_var = tk.StringVar()
-    transmission_time_var = tk.StringVar()
-    data_length_var = tk.StringVar()
-    data_var = tk.StringVar()
-    noise_level_var = tk.StringVar()
-    file_name_var = tk.StringVar()
-
     # Порядок демодулятора
     modulation_order_label = tk.Label(modulator_frame, text="Порядок демодулятора:")
     modulation_order_label.grid(row=0, column=0, padx=5, pady=5)
 
     modulation_order_var = tk.StringVar(root)
-    modulation_order_var.set("1")  # Устанавливаем значение по умолчанию
+    modulation_order_var.set("QAM4")  # Устанавливаем значение по умолчанию
 
     modulation_order_option_menu = ttk.Combobox(modulator_frame, textvariable=modulation_order_var,
                                                 values=create_modulation_order_options())
@@ -98,7 +122,7 @@ def qam_mod():
     carrier_frequency_label = tk.Label(modulator_frame, text="Частота несущей:")
     carrier_frequency_label.grid(row=1, column=0, padx=5, pady=5)
 
-    carrier_frequency_entry = tk.Entry(modulator_frame, textvariable=modulation_order_var, validate="key",
+    carrier_frequency_entry = tk.Entry(modulator_frame, validate="key",
                                        validatecommand=(root.register(validate_frequency), "%P"))
     carrier_frequency_entry.grid(row=1, column=1, padx=5, pady=5)
 
@@ -119,7 +143,7 @@ def qam_mod():
     transmission_time_entry.grid(row=3, column=1, padx=5, pady=5)
 
     # Число данных
-    data_length_label = tk.Label(modulator_frame, text="Число данных:")
+    data_length_label = tk.Label(modulator_frame, text="Число данных в hex:")
     data_length_label.grid(row=4, column=0, padx=5, pady=5)
 
     data_length_entry = tk.Entry(modulator_frame, validate="key",
@@ -143,12 +167,12 @@ def qam_mod():
     noise_level_entry.grid(row=6, column=1, padx=5, pady=5)
 
     # Название файла
-    file_name_label = tk.Label(modulator_frame, text="Название файла (не более 100 символов):")
-    file_name_label.grid(row=7, column=0, padx=5, pady=5)
+    filename_label = tk.Label(modulator_frame, text="Название файла (не более 100 символов):")
+    filename_label.grid(row=7, column=0, padx=5, pady=5)
 
     validate_file_name_length_cmd = (root.register(validate_file_name_length), "%P")
-    file_name_entry = tk.Entry(modulator_frame, validate="key", validatecommand=validate_file_name_length_cmd)
-    file_name_entry.grid(row=7, column=1, padx=5, pady=5)
+    filename_entry = tk.Entry(modulator_frame, validate="key", validatecommand=validate_file_name_length_cmd)
+    filename_entry.grid(row=7, column=1, padx=5, pady=5)
 
     # Фрейм для выбора файла
     demodulator_frame = tk.Frame(root)
@@ -162,7 +186,8 @@ def qam_mod():
     file_name_entry.grid(row=0, column=1, padx=5, pady=5)
 
     # Кнопка для выбора файла
-    select_file_button = tk.Button(demodulator_frame, text="Обзор...", command=open_file_dialog)
+    select_file_button = tk.Button(demodulator_frame, text="Обзор...",
+                                   command=lambda: open_file_dialog(file_name_entry))
     select_file_button.grid(row=0, column=2, padx=5, pady=5)
 
     # Привязка действий к изменению режима
@@ -175,12 +200,12 @@ def qam_mod():
                                     command=lambda: execute_modulator(modulation_order_var, carrier_frequency_entry,
                                                                       sampling_frequency_entry, transmission_time_entry,
                                                                       data_length_entry, data_entry, noise_level_entry,
-                                                                      file_name_entry))
+                                                                      filename_entry))
     do_modulator_button.grid(row=8, column=0, columnspan=2, padx=5, pady=5)
 
     # Кнопка для открытия окна выбора режима
     do_demodulator_button = tk.Button(demodulator_frame, text="Выполнить 2",
-                                      command=open_demodulator(file_name_entry.get()))
+                                      command=lambda: start_demodulator(file_name_entry.get()))
     do_demodulator_button.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
 
     # Запуск главного цикла обработки событий
