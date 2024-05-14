@@ -3,6 +3,18 @@ def create_modulation_order_options():
     return ['QAM4', 'QAM8', 'QAM16', 'QAM32', 'QAM64']
 
 
+def get_block_length(modulation_scheme):
+    """Функция для определения длины блока на основе схемы модуляции."""
+    modulation_to_length = {
+        'QAM4': 2,
+        'QAM8': 3,
+        'QAM16': 4,
+        'QAM32': 5,
+        'QAM64': 6
+    }
+    return modulation_to_length.get(modulation_scheme, 0)  # Возвращает 0, если схема модуляции неизвестна
+
+
 def get_encoding_coefficients(modulation_order):
     coefficients_dict = {
         'QAM4': {
@@ -82,7 +94,6 @@ def get_encoding_coefficients(modulation_order):
             '5': [-1, 0.71],
             '6': [-1, 0.14],
             '7': [-1, 0.43],
-
             '8': [-0.71, -1],
             '9': [-0.71, -0.71],
             '10': [-0.71, -0.14],
@@ -91,7 +102,6 @@ def get_encoding_coefficients(modulation_order):
             '13': [-0.71, 0.71],
             '14': [-0.71, 0.14],
             '15': [-0.71, 0.43],
-
             '16': [-0.14, -1],
             '17': [-0.14, -0.71],
             '18': [-0.14, -0.14],
@@ -100,7 +110,6 @@ def get_encoding_coefficients(modulation_order):
             '21': [-0.14, 0.71],
             '22': [-0.14, 0.14],
             '23': [-0.14, 0.43],
-
             '24': [-0.43, -1],
             '25': [-0.43, -0.71],
             '26': [-0.43, -0.14],
@@ -109,7 +118,6 @@ def get_encoding_coefficients(modulation_order):
             '29': [-0.43, 0.71],
             '30': [-0.43, 0.14],
             '31': [-0.43, 0.43],
-
             '32': [1, -1],
             '33': [1, -0.71],
             '34': [1, -0.14],
@@ -118,7 +126,6 @@ def get_encoding_coefficients(modulation_order):
             '37': [1, 0.71],
             '38': [1, 0.14],
             '39': [1, 0.43],
-
             '40': [0.71, -1],
             '41': [0.71, -0.71],
             '42': [0.71, -0.14],
@@ -127,7 +134,6 @@ def get_encoding_coefficients(modulation_order):
             '45': [0.71, 0.71],
             '46': [0.71, 0.14],
             '47': [0.71, 0.43],
-
             '48': [0.14, -1],
             '49': [0.14, -0.71],
             '50': [0.14, -0.14],
@@ -136,7 +142,6 @@ def get_encoding_coefficients(modulation_order):
             '53': [0.14, 0.71],
             '54': [0.14, 0.14],
             '55': [0.14, 0.43],
-
             '56': [0.43, -1],
             '57': [0.43, -0.71],
             '58': [0.43, -0.14],
@@ -144,7 +149,7 @@ def get_encoding_coefficients(modulation_order):
             '60': [0.43, 1],
             '61': [0.43, 0.71],
             '62': [0.43, 0.14],
-            '63': [0.43, 0.43],
+            '63': [0.43, 0.43]
         }
     }
 
