@@ -1,10 +1,11 @@
-# порядки модуляции (от QAM4 до QAM64)
+# файл с настройками модуляции
 def create_modulation_order_options():
+    # Функция создания типов модуляции в раскрывающемся списке
     return ['QAM4', 'QAM8', 'QAM16', 'QAM32', 'QAM64']
 
 
 def get_block_length(modulation_scheme):
-    """Функция для определения длины блока на основе схемы модуляции."""
+    # Функция для определения длины блока на основе схемы модуляции
     modulation_to_length = {
         'QAM4': 2,
         'QAM8': 3,
@@ -12,10 +13,11 @@ def get_block_length(modulation_scheme):
         'QAM32': 5,
         'QAM64': 6
     }
-    return modulation_to_length.get(modulation_scheme, 0)  # Возвращает 0, если схема модуляции неизвестна
+    return modulation_to_length.get(modulation_scheme, 0)
 
 
 def get_encoding_coefficients(modulation_order):
+    # Функция получения коэффициентов для кодирования
     coefficients_dict = {
         'QAM4': {
             '0': [-1, -1],

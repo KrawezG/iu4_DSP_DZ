@@ -3,39 +3,11 @@ from tkinter import messagebox
 from tkinter import ttk
 from tkinter import filedialog
 
-
-def open_file_dialog(file_name_entry):
-    file_name_entry.config(state="normal")  # Устанавливаем состояние "обычное"
-    filetypes = (("QAM датаграмма файл", "*.qam"),
-                 ("Текстовый файл", "*.txt"),
-                 ("Изображение", "*.jpg *.gif *.png"),
-                 ("Любой", "*"))
-    file_name = filedialog.askopenfilename(filetypes=filetypes)
-    file_name_entry.delete(0, tk.END)
-    file_name_entry.insert(0, file_name)
-    file_name_entry.config(state="readonly")  # Устанавливаем состояние "readonly" после вставки значения
-
-
 from validators import validate_frequency, validate_time, validate_data_length, validate_hex_data, validate_noise_level, \
     validate_file_name_length
-
 from controls import create_modulation_order_options, get_encoding_coefficients, get_block_length
-
 from modualtor import execute_modulator
-
 from demodulator import execute_demodulator
-
-
-def show_modulator_fields(modulator_frame, demodulator_frame):
-    modulator_frame.pack(pady=10)
-    demodulator_frame.pack_forget()
-    # select_mode_button.config(command=open_modulator)
-
-
-def show_demodulator_fields(modulator_frame, demodulator_frame):
-    modulator_frame.pack_forget()
-    demodulator_frame.pack(pady=10)
-    # select_mode_button.config(command=open_demodulator)
 
 
 def qam_mod():
@@ -126,39 +98,60 @@ def qam_mod():
     # Фрейм для выбора файла
     demodulator_frame = tk.Frame(root)
 
-    # Надпись для выбора файла
+    # Поле выбора файла
     file_name_label = tk.Label(demodulator_frame, text="Выберите файл:")
     file_name_label.grid(row=0, column=0, padx=5, pady=5)
 
-    # Поле для отображения выбранного файла
     file_name_entry = tk.Entry(demodulator_frame, state="readonly")
     file_name_entry.grid(row=0, column=1, padx=5, pady=5)
 
-    # Кнопка для выбора файла
     select_file_button = tk.Button(demodulator_frame, text="Обзор...",
                                    command=lambda: open_file_dialog(file_name_entry))
     select_file_button.grid(row=0, column=2, padx=5, pady=5)
 
-    # Привязка действий к изменению режима
+    # Переключатель режимов программы
     mode_var.trace_add("write", lambda *args: (show_modulator_fields(modulator_frame,
                                                                      demodulator_frame) if mode_var.get() == "Модулятор" else show_demodulator_fields(
         modulator_frame, demodulator_frame)))
 
-    # Кнопка для открытия окна выбора режима
-    do_modulator_button = tk.Button(modulator_frame, text="Выполнить 1",
+    # Кнопка для выполнения модуляции
+    do_modulator_button = tk.Button(modulator_frame, text="Модулировать",
                                     command=lambda: execute_modulator(modulation_order_var, carrier_frequency_entry,
                                                                       sampling_frequency_entry, transmission_time_entry,
                                                                       data_length_entry, data_entry, noise_level_entry,
                                                                       filename_entry))
     do_modulator_button.grid(row=8, column=0, columnspan=2, padx=5, pady=5)
 
-    # Кнопка для открытия окна выбора режима
-    do_demodulator_button = tk.Button(demodulator_frame, text="Выполнить 2",
-                                      command=lambda: execute_demodulator(file_name_entry.get()))
+    # Кнопка для выполнения демодуляции файла
+    do_demodulator_button = tk.Button(demodulator_frame, text="Демодулировать",
+                                      command=lambda: execute_demodulator(root, file_name_entry.get()))
     do_demodulator_button.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
 
     # Запуск главного цикла обработки событий
     root.mainloop()
+
+
+def show_modulator_fields(modulator_frame, demodulator_frame):
+    # функция показа полей модулятора
+    modulator_frame.pack(pady=10)
+    demodulator_frame.pack_forget()
+
+
+def show_demodulator_fields(modulator_frame, demodulator_frame):
+    # Функция показа полей демодулятора
+    modulator_frame.pack_forget()
+    demodulator_frame.pack(pady=10)
+
+
+def open_file_dialog(file_name_entry):
+    # Функция диалога выбора файла
+    file_name_entry.config(state="normal")  # Устанавливаем состояние "обычное"
+    filetypes = (("QAM датаграмма файл", "*.qam"),
+                 ("Любой", "*"))
+    file_name = filedialog.askopenfilename(filetypes=filetypes)
+    file_name_entry.delete(0, tk.END)
+    file_name_entry.insert(0, file_name)
+    file_name_entry.config(state="readonly")  # Устанавливаем состояние "readonly" после вставки значения
 
 
 if __name__ == "__main__":

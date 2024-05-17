@@ -9,10 +9,55 @@ import pickle
 from controls import create_modulation_order_options, get_encoding_coefficients, get_block_length
 
 
+def execute_modulator(modulation_order_var, carrier_frequency_entry, sampling_frequency_entry, transmission_time_entry,
+                      data_length_entry, data_entry, noise_level_entry, file_name_entry):
+    # Функция на проверку заполненных полей и запуск модулятора
+    if (modulation_order_var.get() and carrier_frequency_entry.get() and sampling_frequency_entry.get() and
+            transmission_time_entry.get() and data_length_entry.get() and data_entry.get() and
+            noise_level_entry.get() and file_name_entry.get()):
+
+        carrier_frequency = float(carrier_frequency_entry.get())
+        sampling_frequency = float(sampling_frequency_entry.get())
+
+        # Проверка на соотношение частот по критерию Найквиста
+        if sampling_frequency <= carrier_frequency * 2:
+            messagebox.showerror("Ошибка",
+                                 "Частота дискретизации должна быть больше несущей частоты  более чем в 2 раза.")
+            return
+
+        data_length = int(data_length_entry.get())
+        data = data_entry.get()
+
+        # Проверка на соответствие длины данных
+        if data_length != len(data):
+            messagebox.showerror("Ошибка", "Длина данных не совпадает с указанной длиной.")
+            return
+
+        # Если все поля заполнены и соответствуют условиям, создаем словарь с данными
+        data_dict = {
+            'modulation_order': modulation_order_var.get(),
+            'carrier_frequency': carrier_frequency_entry.get(),
+            'sampling_frequency': sampling_frequency_entry.get(),
+            'transmission_time': transmission_time_entry.get(),
+            'data_length': data_length_entry.get(),
+            'data': data_entry.get(),
+            'noise_level': noise_level_entry.get(),
+            'file_name': file_name_entry.get()
+        }
+
+        # Вызываем функцию open_modulator с нашим словарем
+        start_modulator(data_dict)
+    else:
+        # Если какое-то поле не заполнено, выводим сообщение об ошибке
+        messagebox.showerror("Ошибка", "Все поля должны быть заполнены.")
+
+
 def start_modulator(data_dict):
+    # Функция модулятора
     for key, value in data_dict.items():
         print(key + ":", value)
 
+    # Деление исходных данных на блоки данных для схемы модуляции
     blocks, array = process_data(data_dict)
     for block in blocks:
         print(block)
@@ -20,6 +65,7 @@ def start_modulator(data_dict):
     print("\nArray:")
     print(array)
 
+    # Построение синфазного  сигнала, квадратурного сигнала и их суммы
     sine_wave, cosine_wave, combined_signal = generate_signals(array, float(data_dict['carrier_frequency']),
                                                                float(data_dict['sampling_frequency']),
                                                                float(data_dict['noise_level']))
@@ -63,16 +109,16 @@ def start_modulator(data_dict):
 
 
 def hex_to_binary(hex_string):
-    """Функция для конвертации строки шестнадцатеричных чисел в двоичный вид."""
+    # Функция для конвертации строки шестнадцатеричных чисел в двоичный вид
     binary_data = ''.join(format(int(char, 16), '04b') for char in hex_string)
     return binary_data
 
 
 def split_binary_data(binary_data, block_length):
-    """Функция для разбиения двоичных данных на блоки длины block_length."""
+    # Функция для разбиения двоичных данных на блоки длины block_length
     blocks = [binary_data[i:i + block_length] for i in range(0, len(binary_data), block_length)]
 
-    # Проверка последнего блока
+    # Проверка последнего блока ти дополнение его нулями при необходимости
     if len(blocks[-1]) < block_length:
         blocks[-1] = blocks[-1].rjust(block_length, '0')
 
@@ -80,15 +126,11 @@ def split_binary_data(binary_data, block_length):
 
 
 def process_data(data_dict):
-    """Функция для обработки данных, извлеченных из словаря."""
+    # Функция для обработки данных, извлеченных из словаря
     modulation_scheme = (data_dict['modulation_order'])
-    carrier_frequency = float(data_dict['carrier_frequency'])
     sampling_frequency = float(data_dict['sampling_frequency'])
     transmission_time = float(data_dict['transmission_time'])
-    data_length = data_dict['data_length']
     data = data_dict['data']
-    noise_level = float(data_dict['noise_level'])
-    file_name = data_dict['file_name']
 
     # Получение длины блока на основе схемы модуляции
     block_length = get_block_length(modulation_scheme)
@@ -103,12 +145,10 @@ def process_data(data_dict):
 
     # Создаем массив с числом элементов, равным произведению частоты дискретизации на время передачи
     num_elements = int(sampling_frequency * transmission_time)
-    array = [[0, 0]] * num_elements  # Инициализируем массив нулями
+    array = [[0, 0]] * num_elements
 
     # Получаем коэффициенты для данной схемы модуляции
     coefficients = get_encoding_coefficients(modulation_scheme)
-
-    print(coefficients)
 
     # Заполняем массив коэффициентами
     segment_length = num_elements // len(blocks)
@@ -123,7 +163,7 @@ def process_data(data_dict):
 
 
 def generate_signals(array, carrier_frequency, sampling_frequency, noise_level):
-    """Функция для генерации синусоидальных и косинусоидальных сигналов с добавлением шума и их суммирования."""
+    # Функция для генерации синфазного и квадратурного сигналов с добавлением шума и их суммирования
     num_elements = len(array)
     t = np.linspace(0, num_elements / sampling_frequency, num_elements)
 
@@ -142,49 +182,3 @@ def generate_signals(array, carrier_frequency, sampling_frequency, noise_level):
     combined_signal = sine_wave + cosine_wave + noise
 
     return sine_wave, cosine_wave, combined_signal
-
-
-def execute_modulator(modulation_order_var, carrier_frequency_entry, sampling_frequency_entry, transmission_time_entry,
-                      data_length_entry, data_entry, noise_level_entry, file_name_entry):
-    # Проверка на заполненность всех полей
-    if (modulation_order_var.get() and carrier_frequency_entry.get() and sampling_frequency_entry.get() and
-            transmission_time_entry.get() and data_length_entry.get() and data_entry.get() and
-            noise_level_entry.get() and file_name_entry.get()):
-
-        # Получаем значения частот
-        carrier_frequency = float(carrier_frequency_entry.get())
-        sampling_frequency = float(sampling_frequency_entry.get())
-
-        # Проверка на соотношение частот
-        if sampling_frequency <= carrier_frequency * 2:
-            messagebox.showerror("Ошибка",
-                                 "Частота дискретизации должна быть больше несущей частоты  более чем в 2 раза.")
-            return
-
-        # Получаем значения длины данных
-        data_length = int(data_length_entry.get())
-        # Получаем данные из поля
-        data = data_entry.get()
-
-        # Проверка на соответствие длины данных
-        if data_length != len(data):
-            messagebox.showerror("Ошибка", "Длина данных не совпадает с указанной длиной.")
-            return
-
-        # Если все поля заполнены и соответствуют условиям, создаем словарь с данными
-        data_dict = {
-            'modulation_order': modulation_order_var.get(),
-            'carrier_frequency': carrier_frequency_entry.get(),
-            'sampling_frequency': sampling_frequency_entry.get(),
-            'transmission_time': transmission_time_entry.get(),
-            'data_length': data_length_entry.get(),
-            'data': data_entry.get(),
-            'noise_level': noise_level_entry.get(),
-            'file_name': file_name_entry.get()
-        }
-
-        # Вызываем функцию open_modulator с нашим словарем
-        start_modulator(data_dict)
-    else:
-        # Если какое-то поле не заполнено, выводим сообщение об ошибке
-        messagebox.showerror("Ошибка", "Все поля должны быть заполнены.")
