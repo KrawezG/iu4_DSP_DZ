@@ -74,18 +74,18 @@ def start_modulator(data_dict):
     plt.figure(figsize=(14, 7))
 
     plt.subplot(3, 1, 1)
-    plt.plot(sine_wave, label='Sine Wave')
-    plt.title('Sine Wave')
+    plt.plot(sine_wave, label='Квадратурная составляющая')
+    plt.title('Квадратурная составляющая')
     plt.legend()
 
     plt.subplot(3, 1, 2)
-    plt.plot(cosine_wave, label='Cosine Wave', color='orange')
-    plt.title('Cosine Wave')
+    plt.plot(cosine_wave, label='Синфазная составляющая', color='orange')
+    plt.title('Синфазная составляющая')
     plt.legend()
 
     plt.subplot(3, 1, 3)
-    plt.plot(combined_signal, label='Combined Signal', color='green')
-    plt.title('Combined Signal')
+    plt.plot(combined_signal, label='Модулированный сигнал', color='green')
+    plt.title('Модулированный сигнал')
     plt.legend()
 
     plt.tight_layout()
