@@ -29,7 +29,7 @@ def qam_mod():
     modulator_frame = tk.Frame(root)
 
     # Порядок демодулятора
-    modulation_order_label = tk.Label(modulator_frame, text="Порядок демодулятора:")
+    modulation_order_label = tk.Label(modulator_frame, text="Порядок модулятора:")
     modulation_order_label.grid(row=0, column=0, padx=5, pady=5)
 
     modulation_order_var = tk.StringVar(root)
