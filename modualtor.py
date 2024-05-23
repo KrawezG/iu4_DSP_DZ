@@ -68,7 +68,8 @@ def start_modulator(data_dict):
                                                                float(data_dict['noise_level']))
 
     # Построение графиков
-    plt.figure(figsize=(14, 7))
+    plt.figure(figsize=(14, 7), num=1)
+    plt.clf()
 
     plt.subplot(3, 1, 1)
     plt.plot(sine_wave, label='Квадратурная составляющая')
