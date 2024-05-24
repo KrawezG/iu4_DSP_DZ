@@ -102,9 +102,9 @@ def start_demodulator(root, file_name):
 
     # Отображение графика
     fig, ax = plt.subplots()
-    ax.plot(t, combined_signal, label='Combined Signal')
-    ax.plot(t, filtered_sine, label='Filtered Sine Component')
-    ax.plot(t, filtered_cosine, label='Filtered Cosine Component')
+    ax.plot(t, combined_signal, label='Принятый сигнал', color='green')
+    ax.plot(t, filtered_sine, label='Отфильтрованная квадратурная составляющая')
+    ax.plot(t, filtered_cosine, label='Отфильтрованная синфазная составляющая', color='orange')
     ax.legend()
 
     canvas = FigureCanvasTkAgg(fig, master=result_window)
